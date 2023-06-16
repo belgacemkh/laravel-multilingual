@@ -95,8 +95,10 @@ Nous devons maintenant créer quelque chose sur lequel l'utilisateur peut clique
 ### Ajouter le code à pargater dans le AppServiceProvider 
 Ouvrez le fichier app/Providers/AppServiceProvider.php et ajoutez le code à partager lors de la composition de notre sélecteur de langue. Plus précisément, nous partagerons les paramètres régionaux actuels accessibles en tant que {{ $current_locale }}.  
 
-```public function boot()  
-    {  
+```
+public function boot()  
+    {
+        //...
         view()->composer('components.language_switcher', function ($view) {  
             $view->with('current_locale', app()->getLocale());  
             $view->with('available_locales', config('app.available_locales'));  
