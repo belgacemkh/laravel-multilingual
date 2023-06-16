@@ -81,7 +81,8 @@ Ensuite, nous devons ajouter une route pour changer de paramètres régionaux. N
 ### Créer un switch
 Nous devons maintenant créer quelque chose sur lequel l'utilisateur peut cliquer pour changer la langue :  
   
-```@foreach($available_locales as $locale_name => $available_locale)  
+```
+@foreach($available_locales as $locale_name => $available_locale)  
         @if($available_locale === $current_locale)  
             <span class="ml-2 mr-2 text-gray-700">{{ $locale_name }}</span>  
         @else  
