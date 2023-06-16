@@ -10,12 +10,13 @@ Une nouvelle approche d'avoir des fichiers /lang/{fr.json, en.json} et aussi /la
   
 ## Traductions simples
 Ajoutons une nouvelle clé dans config/app.php  
-`'available_locales' => [  
+```
+'available_locales' => [  
   'English' => 'en',  
   'French' => 'fr',  
   'Arabic' => 'ar',  
-],  `
-  
+],
+```  
 ## Fichiers de traduction
 Commençons par ajouter les fichiers de localisation dans le dossier lang.  
 Par expl: lang/fr.json  
@@ -26,13 +27,13 @@ Par expl: lang/fr.json
 ## Changer de Langue dans Laravel
   
 ### Méthode 1 : Modification des routes (méthode à eviter)
-#####Route::get('/{lang?}', function ($lang = null) {
+```Route::get('/{lang?}', function ($lang = null) {
     if (isset($lang) && in_array($lang, config('app.available_locales'))) {
         app()->setLocale($lang);
     }
     return view('welcome');
-});`
-  
+});
+```    
 ### Méthode 2 : Utlisation d'un meiddleware
 `php artisan make:middleware Localization  `
   
