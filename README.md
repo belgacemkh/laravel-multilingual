@@ -99,4 +99,5 @@ Ouvrez le fichier app/Providers/AppServiceProvider.php et ajoutez le code à par
             $view->with('current_locale', app()->getLocale());  
             $view->with('available_locales', config('app.available_locales'));  
         });  
-    }  ```
+    }
+```
