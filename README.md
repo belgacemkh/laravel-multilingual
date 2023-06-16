@@ -1,66 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Localisation en Laravel
+Localisation en Laravel : Créer un site multilingue
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Créer une application Laravel
+laravel new localisation
 
-## About Laravel
+## Travailler avec des fichiers de traduction
+Une ancienne approche qui consiste à stocker vos fichiers sous le chemin suivant : resources/lang/{en,fr,ru}/{myfile.php}. (8.x)
+Une nouvelle approche d'avoir des fichiers /lang/{fr.json, en.json} et aussi /lang/{en,fr}/{myfile.php}
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Traductions simples
+Ajoutons une nouvelle clé dans config/app.php
+/*
+|--------------------------------------------------------------------------
+| Available locales
+|--------------------------------------------------------------------------
+|
+| List all locales that your application works with
+|
+*/
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+'available_locales' => [
+  'English' => 'en',
+  'French' => 'fr',
+  'Arabic' => 'ar',
+],
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Fichiers de traduction
+Commençons par ajouter les fichiers de localisation dans le dossier lang.
+Par expl: lang/lg.json
+{
+  "Welcome to our website": "Boyeyi malamu na site na biso"
+}
 
-## Learning Laravel
+## Changer de Langue dans Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Méthode 1 : Modification des routes (méthode à eviter)
+Route::get('/{lang?}', function ($lang = null) {
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+    if (isset($lang) && in_array($lang, config('app.available_locales'))) {
+        app()->setLocale($lang);
+    }
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    return view('welcome');
+});
 
-## Laravel Sponsors
+### Utlisation d'un meiddleware
+php artisan make:middleware Localization
+namespace App\Http\Middleware;
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
-### Premium Partners
+class Localization
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        if (session()->has('locale')) {
+            App::setLocale(session('locale'));
+        }
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+        return $next($request);
+    }
+}
 
-## Contributing
+### 
+Ce middleware demandera à Laravel d'utiliser les paramètres régionaux sélectionnés par l'utilisateur si cette sélection est présente dans la session.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Comme nous avons besoin que cette opération soit exécutée à chaque requête, nous devons également l'ajouter à la pile middleware par défaut app/http/Kernel.php pour le web group middleware :
 
-## Code of Conduct
+App\Http\Middleware\Localization :: class ,
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Modification des routes
+Ensuite, nous devons ajouter une route pour changer de paramètres régionaux. Nous utilisons une route closure, mais vous pouvez utiliser exactement le même code dans votre contrôleur si vous le souhaitez
 
-## Security Vulnerabilities
+Route::get('langue/{lang}', function ($lang) {
+    app()->setLocale($lang);
+    session()->put('locale', $lang);
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    return redirect()->back();
+});
 
-## License
+### Créer un switch
+Nous devons maintenant créer quelque chose sur lequel l'utilisateur peut cliquer pour changer la langue :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+@foreach($available_locales as $locale_name => $available_locale)
+        @if($available_locale === $current_locale)
+            <span class="ml-2 mr-2 text-gray-700">{{ $locale_name }}</span>
+        @else
+            <a class="ml-1 underline ml-2 mr-2" href="langue/{{ $available_locale }}">
+                <span>{{ $locale_name }}</span>
+            </a>
+        @endif
+    @endforeach
+
+### Ajouter le code à pargater dans le AppServiceProvider
+Ouvrez le fichier app/Providers/AppServiceProvider.php et ajoutez le code à partager lors de la composition de notre sélecteur de langue. Plus précisément, nous partagerons les paramètres régionaux actuels accessibles en tant que {{ $current_locale }}.
+
+public function boot()
+    {
+        view()->composer('components.language_switcher', function ($view) {
+            $view->with('current_locale', app()->getLocale());
+            $view->with('available_locales', config('app.available_locales'));
+        });
+    }
