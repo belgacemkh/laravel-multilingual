@@ -27,9 +27,9 @@ Ajoutons une nouvelle clé dans config/app.php
   
 ## Fichiers de traduction
 Commençons par ajouter les fichiers de localisation dans le dossier lang.  
-Par expl: lang/lg.json  
+Par expl: lang/fr.json  
 {  
-  "Welcome to our website": "Boyeyi malamu na site na biso"  
+  "Welcome to our website": "Bienvenue sur notre site"  
 }  
   
 ## Changer de Langue dans Laravel
